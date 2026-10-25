@@ -1,132 +1,142 @@
 """
-Campus Shield - Streamlit application.
+Campus Shield - student app.
 
-Run using:
-    streamlit run app.py
+Run:
+    python -m streamlit run app.py
+Opens at http://localhost:8501
+
+The placement officer app is a separate program (officer_app.py, port 8502).
+Both read the same database file.
 """
 
 import streamlit as st
 
-from core import db, matching, red_flags
+from core import db, matching, red_flags, ui
 
-
-# ---------- Page setup ----------
-
-st.set_page_config(
-    page_title="Campus Shield",
-    page_icon="🛡️",
-    layout="centered"
-)
-
-# Prepare the database
+st.set_page_config(page_title="Campus Shield", page_icon="🛡️", layout="centered",
+                   initial_sidebar_state="collapsed")
+ui.apply_style()
 db.init_db()
 
+DECIDED = ("Confirmed scam", "Genuine", "Unverified")  # statuses only the officer sets
 
-# ---------- Sidebar ----------
+TAMIL_WARNING = ("எச்சரிக்கை: இந்த வாய்ப்பு உறுதிசெய்யப்பட்ட மோசடியுடன் பொருந்துகிறது. "
+                 "எந்தப் பணமும் செலுத்த வேண்டாம். வேலைவாய்ப்பு அலுவலகத்தைத் தொடர்பு கொள்ளவும்.")
+# A Tamil-speaking team member must check this text before the demo.
 
-st.sidebar.title("🛡️ Campus Shield")
 
-role = st.sidebar.radio(
-    "View as",
-    ["Student", "Placement officer"]
+# ---------- Top of page ----------
+
+ui.top_bar("Student portal")
+
+ui.hero(
+    "Is this offer real?",
+    "Paste any internship or job offer that asks you to pay. "
+    "Your placement cell checks it, and every student is warned once a scam is confirmed.",
+    "Before you pay anyone",
+    "student",
+    "Checked by", "Placement", "Cell",
 )
 
-st.sidebar.caption(
-    "Demo only: no real login in this prototype. "
-    "All data is sample data."
-)
+ui.steps([
+    ("Report the offer", "Paste the message and the sender's details."),
+    ("Placement cell checks it", "An officer confirms it is a scam or genuine."),
+    ("Every student is warned", "Anyone who gets the same offer is alerted instantly."),
+])
+
+all_cases = db.get_cases()
+ui.strip([
+    (sum(1 for c in all_cases if c["status"] == "Confirmed scam"), "confirmed scams on campus", True),
+    (sum(1 for c in all_cases if (c["status"] or "").startswith("Matched")), "repeat scams caught", False),
+    (len(all_cases), "offers reported", False),
+])
 
 
-# ---------- Show a confirmed-scam warning ----------
+# ---------- Your details (visible, not hidden in a sidebar) ----------
 
-def show_warning(match: dict) -> None:
-    """
-    Display a warning when a report matches
-    an existing confirmed scam.
-    """
+with st.container(border=True):
+    ui.label("Your details")
+    c1, c2 = st.columns(2)
+    name = c1.text_input("Your name", placeholder="Enter your name", key="name")
+    reg_no = c2.text_input("Register number", placeholder="Enter your register number", key="reg_no")
+    st.caption("Prototype: no real login. Use sample details for the demo.")
 
-    st.error(
-        f"**Warning: this offer matches a confirmed scam.** "
-        f"The {match['matched_on']} "
-        f"**{match['value']}** belongs to Case #{match['case_id']}. "
-        f"Officer's note: \"{match['note']}\". "
-        "Do not pay any money. Contact the placement cell."
-    )
-
-    # Tamil warning
-    st.error(
-        f"**எச்சரிக்கை: இந்த வாய்ப்பு உறுதிசெய்யப்பட்ட "
-        f"மோசடியுடன் பொருந்துகிறது.** "
-        f"இது வழக்கு #{match['case_id']}-உடன் தொடர்புடையது. "
-        "எந்தப் பணமும் செலுத்த வேண்டாம். "
-        "வேலைவாய்ப்பு அலுவலகத்தைத் தொடர்பு கொள்ளவும்."
-    )
+has_identity = bool(name.strip() and reg_no.strip())
+reporter = f"{name.strip()} ({reg_no.strip()})"
 
 
-# ==================================================
-# STUDENT VIEW
-# ==================================================
+# ---------- Tabs ----------
 
-if role == "Student":
+my_cases = db.get_cases_by_reporter(reporter) if has_identity else []
+updated = sum(1 for c in my_cases if c["status"] in DECIDED)
+my_label = f"My reports ({updated} updated)" if updated else "My reports"
 
-    tab_report, tab_search = st.tabs(
-        ["Report a suspicious offer", "Search confirmed scams"]
-    )
+tab_report, tab_mine, tab_search = st.tabs(["Check an offer", my_label, "Search confirmed scams"])
 
-    # ---------- Report an offer ----------
 
-    with tab_report:
+# ---------- Check an offer ----------
 
-        st.subheader("Report a suspicious offer")
+def show_result(r: dict) -> None:
+    """One clear verdict card, shown in place of the form."""
+    if r["match"]:
+        m = r["match"]
+        ui.result_card(
+            "danger",
+            "Stop. This offer matches a confirmed scam.",
+            [f"The {m['matched_on']} {m['value']} was already confirmed as a scam by your placement cell "
+             f"(Case #{m['case_id']}).",
+             f"Officer's remark: \"{m['note']}\"",
+             "Do not pay any money or share your documents. Contact the placement cell."],
+            case_no=f"Your report is saved as Case #{r['case_id']}, linked to Case #{m['case_id']}.",
+            tamil=TAMIL_WARNING,
+        )
+    elif r["flags"]:
+        ui.result_card(
+            "caution",
+            f"Sent to your placement cell. We found {len(r['flags'])} warning sign"
+            f"{'s' if len(r['flags']) != 1 else ''}.",
+            ["Do not pay anything until the placement cell replies. These are cautions, not a verdict:"],
+            bullets=[f"{f['flag']}: {f['reason']}" for f in r["flags"]],
+            case_no=f"Case #{r['case_id']}. The decision will appear in My reports.",
+        )
+    else:
+        ui.result_card(
+            "calm",
+            "Sent to your placement cell.",
+            ["We found no warning signs, but that does not prove the offer is genuine. "
+             "Wait for the placement cell before paying anything."],
+            case_no=f"Case #{r['case_id']}. The decision will appear in My reports.",
+        )
 
+
+with tab_report:
+    result = st.session_state.get("last_result")
+
+    if result:
+        show_result(result)
+        if st.button("Check another offer", type="primary"):
+            st.session_state.pop("last_result", None)
+            st.rerun()
+    else:
         with st.form("report_form", clear_on_submit=False):
-
-            reporter = st.text_input(
-                "Your name (sample)",
-                value="Student A"
-            )
-
-            company = st.text_input(
-                "Company the offer claims to be from"
-            )
-
-            offer_text = st.text_area(
-                "Paste the offer message",
-                height=150
-            )
-
+            company = st.text_input("Company the offer claims to be from", placeholder="e.g. TechNova Solutions")
+            offer_text = st.text_area("Offer message", height=140,
+                                      placeholder="Paste the WhatsApp message or email here")
             col1, col2, col3 = st.columns(3)
-
             sender_email = col1.text_input("Sender email")
             phone = col2.text_input("Phone number")
-            upi_id = col3.text_input("UPI ID (if payment requested)")
+            upi_id = col3.text_input("UPI ID, if they asked for payment")
+            submitted = st.form_submit_button("Check this offer", type="primary", width="stretch")
 
-            submitted = st.form_submit_button("Check & Submit")
-
-        # Process the submitted report
         if submitted:
-
-            if not offer_text.strip():
-
-                st.warning("Please paste the offer message.")
-
+            if not has_identity:
+                st.warning("Enter your name and register number in Your details first.")
+            elif not offer_text.strip():
+                st.warning("Paste the offer message to check it.")
             else:
+                flags = red_flags.check_offer(offer_text, sender_email, company)
+                match = matching.find_confirmed_match(phone, sender_email, upi_id)
 
-                # Check for warning signs
-                flags = red_flags.check_offer(
-                    offer_text,
-                    sender_email,
-                    company
-                )
-
-                # Search for an existing confirmed scam
-                match = matching.find_confirmed_match(
-                    phone,
-                    sender_email,
-                    upi_id
-                )
-
-                # Prepare the new report
                 case = {
                     "reporter": reporter,
                     "company_claimed": company,
@@ -134,223 +144,81 @@ if role == "Student":
                     "sender_email": sender_email,
                     "phone": phone,
                     "upi_id": upi_id,
-                    "flags": "; ".join(
-                        flag["flag"] for flag in flags
-                    ),
+                    "flags": "; ".join(f["flag"] for f in flags),
                 }
-
-                # Link the report if a confirmed scam matches
                 if match:
-
                     case["status"] = f"Matched #{match['case_id']}"
                     case["matched_case_id"] = match["case_id"]
-
-                # Save the report
                 case_id = db.add_case(case)
 
-                # Display a warning if a confirmed scam matches
-                if match:
-                    show_warning(match)
-
-                # Display any warning signs
-                if flags:
-
-                    st.markdown(
-                        "**Red flags found** "
-                        "(cautions, not a verdict):"
-                    )
-
-                    for flag in flags:
-                        st.warning(
-                            f"**{flag['flag']}**: {flag['reason']}"
-                        )
-
-                elif not match:
-
-                    st.info(
-                        "No red flags found. "
-                        "That does not prove the offer is genuine."
-                    )
-
-                # Show the appropriate success message
-                if match:
-
-                    st.success(
-                        f"Report saved as Case #{case_id}, "
-                        f"linked to confirmed Case #{match['case_id']}."
-                    )
-
-                else:
-
-                    st.success(
-                        f"Report saved as Case #{case_id}. "
-                        "The report is awaiting placement officer review."
-                    )
-
-    # ---------- Search confirmed scams ----------
-
-    with tab_search:
-
-        st.subheader("Search confirmed scams")
-
-        st.caption(
-            "Only cases confirmed by the placement officer "
-            "are shown here."
-        )
-
-        query = st.text_input(
-            "Search by company, email, phone or UPI ID"
-        )
-
-        results = db.search_confirmed(query)
-
-        if not results:
-
-            st.info("No confirmed scams match your search.")
-
-        else:
-
-            for case in results:
-
-                with st.container(border=True):
-
-                    company_name = (
-                        case["company_claimed"] or "Unknown company"
-                    )
-
-                    st.markdown(
-                        f"**Case #{case['case_id']}: {company_name}**"
-                        f" · {case['created_at'][:10]}"
-                    )
-
-                    st.write(
-                        f"Email: {case['sender_email'] or '-'}"
-                        f" · Phone: {case['phone'] or '-'}"
-                        f" · UPI: {case['upi_id'] or '-'}"
-                    )
-
-                    st.caption(
-                        f"Officer's note: {case['officer_note']}"
-                    )
+                st.session_state.last_result = {"case_id": case_id, "flags": flags, "match": match}
+                st.rerun()
 
 
-# ==================================================
-# PLACEMENT OFFICER VIEW
-# ==================================================
+# ---------- My reports: updates arrive on their own ----------
 
-else:
+@st.fragment(run_every=4)
+def watch_my_updates() -> None:
+    """Every 4 seconds, check whether the officer has decided on any of my reports.
+    If something changed, redraw the page so the student sees it without refreshing."""
+    if not has_identity:
+        return
+    now = sum(1 for c in db.get_cases_by_reporter(reporter) if c["status"] in DECIDED)
+    key = f"seen_updates_{reporter}"
+    before = st.session_state.get(key)
+    st.session_state[key] = now
+    if before is not None and now > before:
+        st.toast("The placement cell replied to your report.", icon="📬")
+        st.rerun(scope="app")
 
-    tab_queue, tab_all = st.tabs(
-        ["Review queue", "All cases"]
-    )
 
-    # ---------- Review pending reports ----------
+with tab_mine:
+    watch_my_updates()
 
-    with tab_queue:
+    if not has_identity:
+        st.info("Enter your name and register number in Your details to see your reports.")
+    elif not my_cases:
+        st.info("No reports yet. Check an offer in the first tab and it will show up here.")
+    else:
+        st.caption(f"Reports from {reporter}. Decisions appear here automatically.")
 
-        st.subheader("Review queue")
+    for c in my_cases:
+        with st.container(border=True):
+            ui.case_header(c)
+            ui.quote(c["offer_text"], limit=220)
 
-        pending_cases = db.get_cases("Pending")
+            status = c["status"]
+            if status == "Pending":
+                st.caption("Waiting for the placement officer.")
+            elif status == "Confirmed scam":
+                ui.note(c["officer_note"])
+                st.error("Confirmed scam. Do not pay or share your documents.")
+            elif status == "Genuine":
+                ui.note(c["officer_note"])
+                st.success("The placement cell checked this offer and found it genuine.")
+            elif status == "Unverified":
+                ui.note(c["officer_note"])
+                st.info("The placement cell could not verify this offer yet. Do not pay until it is confirmed.")
+            elif status.startswith("Matched"):
+                st.error(f"Matched confirmed scam Case #{c['matched_case_id']}. Do not pay.")
 
-        if not pending_cases:
 
-            st.info("No pending reports.")
+# ---------- Search confirmed scams ----------
 
-        else:
+with tab_search:
+    query = st.text_input("Search by company, email, phone or UPI ID",
+                          placeholder="e.g. TechNova or someone@okaxis")
+    results = db.search_confirmed(query)
+    st.caption("Only offers the placement officer has confirmed as scams are listed.")
 
-            for case in pending_cases:
+    if not results:
+        st.info("No confirmed scam matches that. Still unsure? Check the offer in the first tab.")
 
-                with st.container(border=True):
+    for c in results:
+        with st.container(border=True):
+            ui.case_header(c)
+            ui.facts(c)
+            ui.note(c["officer_note"])
 
-                    company_name = (
-                        case["company_claimed"] or "Unknown company"
-                    )
 
-                    st.markdown(
-                        f"**Case #{case['case_id']}: {company_name}**"
-                        f" · {case['created_at']}"
-                    )
-
-                    st.text(case["offer_text"])
-
-                    st.write(
-                        f"Email: {case['sender_email'] or '-'}"
-                        f" · Phone: {case['phone'] or '-'}"
-                        f" · UPI: {case['upi_id'] or '-'}"
-                    )
-
-                    st.caption(
-                        f"Red flags: {case['flags'] or 'none'}"
-                    )
-
-                    # Officer selects a decision
-                    decision = st.radio(
-                        "Decision",
-                        [
-                            "Confirmed scam",
-                            "Genuine",
-                            "Unverified"
-                        ],
-                        key=f"decision_{case['case_id']}",
-                        horizontal=True
-                    )
-
-                    # Officer explains the decision
-                    note = st.text_input(
-                        "Note (shown in warnings if confirmed)",
-                        key=f"note_{case['case_id']}"
-                    )
-
-                    # Save the officer's decision
-                    if st.button(
-                        "Save decision",
-                        key=f"save_{case['case_id']}"
-                    ):
-
-                        if decision == "Confirmed scam" and not note.strip():
-
-                            st.warning(
-                                "Add a note explaining why "
-                                "the offer is a scam."
-                            )
-
-                        else:
-
-                            db.set_status(
-                                case["case_id"],
-                                decision,
-                                note
-                            )
-
-                            st.rerun()
-
-    # ---------- View all reports ----------
-
-    with tab_all:
-
-        st.subheader("All cases")
-
-        cases = db.get_cases()
-
-        if not cases:
-
-            st.info("No cases yet.")
-
-        else:
-
-            case_data = [
-                {
-                    "Case": case["case_id"],
-                    "Date": case["created_at"],
-                    "Company": case["company_claimed"],
-                    "Status": case["status"],
-                    "Note": case["officer_note"]
-                }
-                for case in cases
-            ]
-
-            st.dataframe(
-                case_data,
-                hide_index=True,
-                width="stretch"
-            )
+ui.footer()
