@@ -1,6 +1,11 @@
 # AI use log
 - Idea research and comparison of 3 ideas: AI-assisted (Claude), final choice made by the team
 - Campus Shield walkthrough doc and portal text drafts: AI-drafted, edited by the team
-- Function interfaces: designed by Deva, reviewed with AI- red_flags.py upgrade (fee rule that ignores stipends, WHOIS domain age, urgency): AI-assisted (Claude), reviewed and tested by Kanisha
-- seed.py, tests/, docs/technical_design.md: AI-drafted, run and checked by the team (8 tests pass)
-- Harshan's sample data review: found zero-fee false positive and BOM issue; fee rule and seed fixed with AI help (Claude), 12 tests pass
+- Function interfaces: agreed by the team, reviewed with AI
+- Student app, officer app and UI theme (app.py, officer_app.py, core/ui.py, .streamlit/config.toml): AI-generated (Claude) from requirements set by B R Devamayookha (separate student/officer apps, PIN lock, live updates without refresh, English + Tamil warning, visual style); run, tested and revised by B R Devamayookha
+- matching.py and early db/red_flags stubs: AI-generated (Claude), replaced or reviewed by Kanisha M
+- red_flags.py upgrade (fee rule that ignores stipends, WHOIS domain age, urgency): AI-assisted (Claude), reviewed and tested by Kanisha M
+- seed.py, tests/, docs/technical_design.md: AI-drafted, run and checked by the team
+- Sample cases and demo reports: written by Harshan S with AI help for formatting; reviewed with AI for test coverage
+- Harshan S's sample data review: found zero-fee false positive and BOM issue; fee rule and seed fixed with AI help (Claude), 12 tests pass
+- Pitch deck (7 slides) and demo video script: AI-drafted (Claude), content checked and edited by the team
