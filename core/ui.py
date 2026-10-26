@@ -41,14 +41,15 @@ header[data-testid="stHeader"] {{ background: transparent; height: 0; }}
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding: 4px 2px 14px; flex-wrap: wrap;
 }}
-.cs-brand {{ display: flex; align-items: center; gap: 10px; color: {INK}; }}
+.cs-brand {{ display: flex; align-items: center; gap: 14px; color: {INK}; }}
 .cs-logo {{
-  width: 34px; height: 34px; border-radius: 10px; background: {INK};
-  display: grid; place-items: center; color: {MARIGOLD}; font-size: 18px;
+  width: 50px; height: 50px; border-radius: 14px; background: {INK};
+  display: grid; place-items: center; color: {MARIGOLD}; font-size: 26px;
 }}
-.cs-brand b {{ font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.2rem; font-weight: 800; }}
-.cs-brand span {{ color: {SLATE}; font-size: .9rem; margin-left: 4px; }}
-.cs-team {{ color: {SLATE}; font-size: .85rem; }}
+.cs-brand b {{ font-family: 'Bricolage Grotesque', sans-serif; font-size: 2rem; font-weight: 800;
+  letter-spacing: -.02em; line-height: 1; }}
+.cs-brand span {{ color: {INK}; background: #FFFFFF; border: 1px solid #D9DCF3; border-radius: 999px;
+  padding: 4px 12px; font-size: .85rem; font-weight: 600; margin-left: 4px; }}
 
 /* ---------- Header ---------- */
 .cs-hero {{
@@ -196,7 +197,11 @@ div[data-testid="stMetric"] {{
 }}
 div[data-testid="stMetricValue"] {{ font-family: 'Bricolage Grotesque', sans-serif; color: {INK}; }}
 
-.cs-foot {{ text-align: center; color: {SLATE}; font-size: .82rem; margin-top: 28px; }}
+.cs-foot {{ text-align: center; margin: 56px 0 24px; padding-top: 24px; border-top: 1px solid #D9DCF3; }}
+.cs-foot small {{ display: block; color: {SLATE}; font-size: .72rem; letter-spacing: .14em;
+  text-transform: uppercase; margin-bottom: 10px; }}
+.cs-foot div {{ color: {INK}; font-size: .98rem; font-weight: 600; word-spacing: 2px; }}
+.cs-foot i {{ color: {MARIGOLD}; font-style: normal; margin: 0 14px; }}
 
 @media (prefers-reduced-motion: reduce) {{ * {{ transition: none !important; animation: none !important; }} }}
 </style>
@@ -212,8 +217,7 @@ def apply_style() -> None:
 def top_bar(portal: str) -> None:
     st.markdown(
         f'<div class="cs-top"><div class="cs-brand"><div class="cs-logo">🛡</div>'
-        f"<b>Campus Shield</b><span>{e(portal)}</span></div>"
-        f'<div class="cs-team">{e(TEAM)}</div></div>',
+        f"<b>Campus Shield</b><span>{e(portal)}</span></div></div>",
         unsafe_allow_html=True,
     )
 
@@ -314,7 +318,7 @@ def note(text: str, title: str = "Placement officer's remark") -> None:
 
 def footer() -> None:
     st.markdown(
-        '<div class="cs-foot">Built by Team KALIBRE: Kanisha M, B R Devamayookha, Harshan S. '
-        "Prototype for Hack for Social Cause, VBYLD 2027. All data shown is sample data.</div>",
+        '<div class="cs-foot"><small>Built by Team KALIBRE</small>'
+        "<div>Kanisha M<i>•</i>B R Devamayookha<i>•</i>Harshan S</div></div>",
         unsafe_allow_html=True,
     )
