@@ -120,7 +120,7 @@ with tab_report:
             st.rerun()
     else:
         with st.form("report_form", clear_on_submit=False):
-            company = st.text_input("Company the offer claims to be from", placeholder="e.g. TechNova Solutions")
+            company = st.text_input("Company the offer claims to be from", placeholder="e.g. Nexovanta Careers")
             offer_text = st.text_area("Offer message", height=140,
                                       placeholder="Paste the WhatsApp message or email here")
             col1, col2, col3 = st.columns(3)
@@ -208,7 +208,7 @@ with tab_mine:
 
 with tab_search:
     query = st.text_input("Search by company, email, phone or UPI ID",
-                          placeholder="e.g. TechNova or someone@okaxis")
+                          placeholder="e.g. Nexovanta or someone@okaxis")
     results = db.search_confirmed(query)
     st.caption("Only offers the placement officer has confirmed as scams are listed.")
 
