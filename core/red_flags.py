@@ -15,8 +15,13 @@ FREE_MAIL = ("gmail.com", "yahoo.com", "outlook.com", "rediffmail.com", "hotmail
 
 # Money the student is asked to SEND. A stipend or salary must never match.
 FEE_PHRASES = ("registration fee", "processing fee", "certificate fee", "verification fee",
-               "training fee", "joining fee", "onboarding fee", "security deposit",
+               "training fee", "joining fee", "onboarding fee", "onboarding deposit", "processing payment", "security deposit",
                "refundable deposit")
+# "Registration fee: Rs 0", "fee: nil", "fee waived" are not fee demands.
+NO_FEE_AFTER = re.compile(r"^[\s:\-]*((rs\.?|₹|inr)?\s?0\b|nil\b|none\b|free\b|waived\b|not required\b|not applicable\b)")
+# An amount followed closely by fee/deposit/payment: "₹1,500 refundable onboarding deposit".
+AMOUNT_THEN_FEE = re.compile(r"(rs\.?|₹|inr)\s?([\d,]+)[^.\n]{0,30}?\b(fee|deposit|payment|charge)s?\b")
+FEE_THEN_AMOUNT = re.compile(r"\b(fee|deposit)s?\b\W{0,3}(rs\.?|₹|inr)\s?([\d,]+)")
 SEND_MONEY = re.compile(r"\b(pay|send|transfer|deposit)\b([^.\n]{0,30}?)(rs\.?|₹|inr)\s?\d")
 UPI_ID = re.compile(r"\b[\w.\-]+@[a-z]+\b(?!\.)")
 AMOUNT = re.compile(r"(rs\.?|₹|inr)\s?\d")
@@ -29,7 +34,18 @@ NEW_DOMAIN_DAYS = 180
 
 
 def _fee_demand(text: str) -> dict | None:
-    asks = any(p in text for p in FEE_PHRASES)
+    asks = False
+    for p in FEE_PHRASES:
+        for m in re.finditer(re.escape(p), text):
+            if not NO_FEE_AFTER.match(text[m.end():m.end() + 20]):
+                asks = True
+    if not asks:
+        found = [(m.group(0), m.group(2)) for m in AMOUNT_THEN_FEE.finditer(text)]
+        found += [(m.group(0), m.group(3)) for m in FEE_THEN_AMOUNT.finditer(text)]
+        for span, amount in found:
+            if amount.replace(",", "").strip("0") and "stipend" not in span and "salary" not in span:
+                asks = True
+                break
     if not asks:
         for m in SEND_MONEY.finditer(text):
             if "stipend" not in m.group(2) and "salary" not in m.group(2):

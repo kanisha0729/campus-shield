@@ -26,7 +26,7 @@ cd campus-shield
 py -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
-py seed.py                          # loads 16 simulated sample cases
+py seed.py                          # loads 17 simulated sample cases
 py -m streamlit run app.py          # student page
 py -m streamlit run officer_app.py --server.port 8502   # officer page (second terminal)
 py -m pytest                        # runs the tests
@@ -82,8 +82,9 @@ campus-shield/
 │   ├── ui.py            # shared styling
 │   ├── red_flags.py     # rule-based red-flag checks with reasons
 │   └── matching.py      # normalise and match against confirmed cases
-├── data/sample_cases.csv   # 16 simulated, labelled cases
-├── tests/               # 8 tests for red flags, matching, search and seeding
+├── data/sample_cases.csv   # 17 simulated, labelled cases
+│   └── demo_reports.csv     # 4 repeat-scam reports to type in during the demo
+├── tests/               # 12 tests for red flags, matching, search, sample data and demo
 ├── docs/
 │   └── technical_design.md   # architecture diagram and explanation
 ├── ai_log.md            # record of AI tool use

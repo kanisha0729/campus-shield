@@ -3,3 +3,4 @@
 - Campus Shield walkthrough doc and portal text drafts: AI-drafted, edited by the team
 - Function interfaces: designed by Deva, reviewed with AI- red_flags.py upgrade (fee rule that ignores stipends, WHOIS domain age, urgency): AI-assisted (Claude), reviewed and tested by Kanisha
 - seed.py, tests/, docs/technical_design.md: AI-drafted, run and checked by the team (8 tests pass)
+- Harshan's sample data review: found zero-fee false positive and BOM issue; fee rule and seed fixed with AI help (Claude), 12 tests pass

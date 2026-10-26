@@ -14,7 +14,7 @@ CSV_PATH = os.path.join(os.path.dirname(__file__), "data", "sample_cases.csv")
 def seed() -> int:
     db.init_db()
     db.reset_demo()
-    with open(CSV_PATH, encoding="utf-8", newline="") as f:
+    with open(CSV_PATH, encoding="utf-8-sig", newline="") as f:
         rows = list(csv.DictReader(f))
     for r in rows:
         flags = red_flags.check_offer(r["offer_text"], r["sender_email"], r["company_claimed"])

@@ -29,7 +29,7 @@ flowchart LR
 | Red flags | `core/red_flags.py` | Rule-based cautions, each with a plain reason |
 | Matching | `core/matching.py` | Exact match against **Confirmed scam** cases only |
 | Storage | `core/db.py` | SQLite file shared by both pages |
-| Sample data | `data/sample_cases.csv`, `seed.py` | 16 simulated cases for the demo |
+| Sample data | `data/sample_cases.csv`, `seed.py` | 17 simulated cases, plus `data/demo_reports.csv` with 4 repeat-scam reports for the live demo |
 
 ## 4. Flow, step by step
 
@@ -76,7 +76,7 @@ Phone numbers are reduced to their last 10 digits. Email and UPI IDs are trimmed
 - It is a single-college prototype on SQLite. Logins and multi-college sharing are future work.
 
 ## 9. Tests
-`py -m pytest` runs 8 tests: fee rule, stipend safety, free mail, urgency, confirmed-only matching, case-insensitive UPI match, confirmed-only search, and seeding.
+`py -m pytest` runs 12 tests: fee rule, stipend safety, zero-fee offers, deposits, free mail, urgency, confirmed-only matching, case-insensitive UPI match, confirmed-only search, seeding, no fee flags on genuine samples, and every demo report matching a confirmed case.
 
 ## 10. Use of AI tools
 See `ai_log.md`. AI assistants were used for research, drafting documents and reviewing code; every change was read, run and tested by the team.
