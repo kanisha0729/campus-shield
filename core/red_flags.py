@@ -23,6 +23,8 @@ NO_FEE_AFTER = re.compile(r"^[\s:\-]*((rs\.?|₹|inr)?\s?0\b|nil\b|none\b|free\b
 AMOUNT_THEN_FEE = re.compile(r"(rs\.?|₹|inr)\s?([\d,]+)[^.\n]{0,30}?\b(fee|deposit|payment|charge)s?\b")
 FEE_THEN_AMOUNT = re.compile(r"\b(fee|deposit)s?\b\W{0,3}(rs\.?|₹|inr)\s?([\d,]+)")
 SEND_MONEY = re.compile(r"\b(pay|send|transfer|deposit)\b([^.\n]{0,30}?)(rs\.?|₹|inr)\s?\d")
+# Amount written before the currency: "Pay 500000 rs", "send 999 rupees".
+PAY_AMOUNT_AFTER = re.compile(r"\b(pay|send|transfer)\b[^.\n]{0,30}?\d[\d,]*\s?(rs|rupees|inr)\b")
 UPI_ID = re.compile(r"\b[\w.\-]+@[a-z]+\b(?!\.)")
 AMOUNT = re.compile(r"(rs\.?|₹|inr)\s?\d")
 
@@ -49,6 +51,12 @@ def _fee_demand(text: str) -> dict | None:
     if not asks:
         for m in SEND_MONEY.finditer(text):
             if "stipend" not in m.group(2) and "salary" not in m.group(2):
+                asks = True
+                break
+    if not asks:
+        for m in PAY_AMOUNT_AFTER.finditer(text):
+            window = text[m.start():m.end() + 20]
+            if "stipend" not in window and "salary" not in window:
                 asks = True
                 break
     if not asks and UPI_ID.search(text) and AMOUNT.search(text):

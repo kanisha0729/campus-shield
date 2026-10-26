@@ -1,4 +1,4 @@
-"""STUB for Kanisha's matching.py.
+"""Match a new report against officer-confirmed scams.
 
 Normalises identifiers and matches ONLY against officer-confirmed cases.
 """

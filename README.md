@@ -48,7 +48,7 @@ None are required. The app uses free, local tools only and needs no API keys.
 
 Open the student page and the officer page side by side. There is no real login in this prototype.
 
-1. **Student A** reports an offer from "TechNova Solutions" that asks for a Rs 2,000 registration fee to UPI ID `technova.hr@okaxis`. Red flags appear: fee demand, free-mail sender, urgency.
+1. **Student A** reports an offer from "Velorix" that asks for a Rs 2,000 registration fee to UPI ID `velorix.hr@okaxis`. Red flags appear: fee demand, free-mail sender, urgency.
 2. **Placement officer** opens the review queue and marks the case **Confirmed scam** with a note.
 3. **Student B** reports a different-looking offer with the **same UPI ID**.
 4. Campus Shield warns Student B immediately in English and Tamil and shows the confirmed case.

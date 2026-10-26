@@ -21,8 +21,13 @@ def test_deposit_before_word_is_a_fee():
     assert "Fee demand" in flags("Pay a ₹1,500 refundable onboarding deposit within 20 minutes")
 
 
+def test_amount_before_rs_is_a_fee():
+    assert "Fee demand" in flags("Pay 500000 rs to confirm your seat")
+    assert "Fee demand" not in flags("We pay 15000 rs stipend monthly")
+
+
 def test_free_mail_for_company_offer():
-    assert "Free-mail sender" in flags("Offer letter attached", "hr.team@gmail.com", "TechNova")
+    assert "Free-mail sender" in flags("Offer letter attached", "hr.team@gmail.com", "Velorix")
 
 
 def test_urgency_minutes():
@@ -38,8 +43,8 @@ def test_match_only_confirmed_cases():
 
 
 def test_upi_match_ignores_case():
-    db.add_case({"offer_text": "x", "upi_id": "TechNova.HR@okaxis", "status": "Confirmed scam"})
-    assert matching.find_confirmed_match("", "", "technova.hr@okaxis")["matched_on"] == "UPI ID"
+    db.add_case({"offer_text": "x", "upi_id": "Velorix.HR@okaxis", "status": "Confirmed scam"})
+    assert matching.find_confirmed_match("", "", "velorix.hr@okaxis")["matched_on"] == "UPI ID"
 
 
 def test_students_search_only_confirmed():
@@ -55,7 +60,7 @@ def test_seed_loads_sample_data():
     with open(seed.CSV_PATH, encoding="utf-8-sig") as f:
         rows = list(csv.DictReader(f))
     assert seed.seed() == len(rows)
-    assert db.get_case(1)["company_claimed"] == "TechNova"
+    assert db.get_case(1)["company_claimed"] == "Velorix"
     assert db.get_case(1)["status"] == "Confirmed scam"
     allowed = {"Pending", "Confirmed scam", "Genuine", "Unverified"}
     assert {r["status"] for r in rows} <= allowed
