@@ -2,7 +2,7 @@
 Campus Shield - student app.
 
 Run:
-    python -m streamlit run app.py
+    py -m streamlit run app.py
 Opens at http://localhost:8501
 
 The placement officer app is a separate program (officer_app.py, port 8502).
@@ -28,6 +28,7 @@ TAMIL_WARNING = ("எச்சரிக்கை: இந்த வாய்ப�
 # ---------- Top of page ----------
 
 ui.top_bar("Student portal")
+st.caption("⚠️ Demo data — all companies, numbers and verifications are simulated.")
 
 ui.hero(
     "Is this offer real?",

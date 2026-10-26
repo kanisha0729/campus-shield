@@ -2,7 +2,7 @@
 Campus Shield - placement officer app (separate from the student app).
 
 Run in a second terminal:
-    python -m streamlit run officer_app.py --server.port 8502
+    py -m streamlit run officer_app.py --server.port 8502
 Opens at http://localhost:8502
 
 Locked with a PIN. Set it with the environment variable
@@ -25,6 +25,8 @@ db.init_db()
 OFFICER_PIN = os.environ.get("CAMPUS_SHIELD_OFFICER_PIN", "1234")
 
 ui.top_bar("Placement cell")
+st.caption("⚠️ Demo data — all companies, numbers and verifications are simulated.")
+
 
 
 # ---------- PIN lock ----------
