@@ -76,7 +76,7 @@ Phone numbers are reduced to their last 10 digits. Email and UPI IDs are trimmed
 - It is a single-college prototype on SQLite. Logins and multi-college sharing are future work.
 
 ## 9. Tests
-`py -m pytest` runs 12 tests: fee rule, stipend safety, zero-fee offers, deposits, free mail, urgency, confirmed-only matching, case-insensitive UPI match, confirmed-only search, seeding, no fee flags on genuine samples, and every demo report matching a confirmed case.
+`py -m pytest` runs 13 tests: fee rule, stipend safety, zero-fee offers, deposits, free mail, urgency, confirmed-only matching, case-insensitive UPI match, confirmed-only search, seeding, no fee flags on genuine samples, and every demo report matching a confirmed case.
 
 ## 10. Use of AI tools
 See `ai_log.md`. AI assistants were used for research, drafting documents and reviewing code; every change was read, run and tested by the team.

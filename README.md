@@ -40,18 +40,22 @@ All names, phone numbers, emails and UPI IDs in `data/sample_cases.csv` are simu
 
 ### Environment variables
 
-None are required. The app uses free, local tools only and needs no API keys.
+| Variable | Required | Default | What it does |
+| --- | --- | --- | --- |
+| `CAMPUS_SHIELD_OFFICER_PIN` | No | `1234` | PIN that unlocks the placement officer page |
+
+No API keys are needed. The app uses free, local tools only (the domain-age check uses a public WHOIS lookup and is skipped if there is no internet).
 
 ---
 
 ## Demo (under one minute)
 
-Open the student page and the officer page side by side. There is no real login in this prototype.
+Run `py seed.py` first. Open the student page and the officer page side by side. The officer page PIN is `1234`; there is no student login in this prototype.
 
-1. **Student A** reports an offer from "Velorix" that asks for a Rs 2,000 registration fee to UPI ID `velorix.hr@okaxis`. Red flags appear: fee demand, free-mail sender, urgency.
-2. **Placement officer** opens the review queue and marks the case **Confirmed scam** with a note.
-3. **Student B** reports a different-looking offer with the **same UPI ID**.
-4. Campus Shield warns Student B immediately in English and Tamil and shows the confirmed case.
+1. After seeding, **Case #1 (Velorix)** is already a **Confirmed scam**: it asked for a Rs 2,000 registration fee to UPI ID `velorix.hr@okaxis`.
+2. **A new student** reports the BrightPath offer from `data/demo_reports.csv`: different company and wording, but the **same UPI ID**.
+3. Campus Shield warns the student immediately in English and Tamil, links the report to Case #1, and the officer page shows it under **Repeat scams caught**.
+4. The **placement officer** reviews a Pending case and marks it **Genuine**, **Unverified** or **Confirmed scam** with a remark; the student sees the decision under **My reports** without refreshing.
 
 ---
 
@@ -82,9 +86,10 @@ campus-shield/
 │   ├── ui.py            # shared styling
 │   ├── red_flags.py     # rule-based red-flag checks with reasons
 │   └── matching.py      # normalise and match against confirmed cases
-├── data/sample_cases.csv   # 17 simulated, labelled cases
-│   └── demo_reports.csv     # 4 repeat-scam reports to type in during the demo
-├── tests/               # 12 tests for red flags, matching, search, sample data and demo
+├── data/
+│   ├── sample_cases.csv  # 17 simulated, labelled cases
+│   └── demo_reports.csv  # 4 repeat-scam reports to type in during the demo
+├── tests/               # 13 tests for red flags, matching, search, sample data and demo
 ├── docs/
 │   └── technical_design.md   # architecture diagram and explanation
 ├── ai_log.md            # record of AI tool use
@@ -97,7 +102,7 @@ campus-shield/
 ## Limitations
 
 - **Sample data only.** No real student data is stored.
-- **No real login.** The separate student and officer pages are for the demo.
+- **Simple login.** Students enter a name and register number; the officer page uses one PIN. Real college logins are future work.
 - **Rule-based checks.** Red flags are cautions, not proof. A real offer can trigger a flag, and a scam can avoid all of them.
 - **Exact matching.** A scammer who changes phone, email and UPI ID will not match a past case.
 - **Single college.** The prototype runs one registry for one placement cell.

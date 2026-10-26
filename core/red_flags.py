@@ -79,7 +79,7 @@ def _new_domain(domain: str) -> dict | None:
     if not domain or domain in FREE_MAIL or domain.endswith(".example") or whois is None:
         return None
     try:
-        created = whois.whois(domain).creation_date
+        created = whois.whois(domain, quiet=True, timeout=5).creation_date
         if isinstance(created, list):
             created = created[0]
         if not created:
